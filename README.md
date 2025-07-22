@@ -6,14 +6,14 @@ A high-performance asynchronous backend API built using **FastAPI**, **SQLAlchem
 
 ## Features
 
-- Fully async FastAPI backend
-- PostgreSQL as primary data store (via Docker)
-- Alembic for schema migrations
-- User creation
-- Posts, nested comments, likes, saves, categories
-- Docker + Docker Compose ready
-- Feed endpoint for user-specific post curation
-
+- User and Post creation
+- Commenting (with replies and likes)
+- Likes and Saves on posts and comments
+- Categorized posts
+- Asynchronous PostgreSQL interaction with `asyncpg`
+- Docker + Docker Compose setup
+- Controlled DB migrations via Alembic
+  
 ------------------------------------------------------------------------------
 
 ## Tech Stack
@@ -46,3 +46,60 @@ A high-performance asynchronous backend API built using **FastAPI**, **SQLAlchem
 ├── .env                 # Environment variables
 ├── .gitignore
 └── README.md
+---------------------------------------------------------------------------------
+
+## Getting Started
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+cd YOUR_REPO_NAME
+
+### 2. Create .env File
+env
+Copy code
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=facebookdb
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+
+### 3. Build and Run with Docker
+bash
+Copy code
+docker-compose up --build
+
+### 4. Run Alembic Migrations
+bash
+Copy code
+make migrate message="initial"
+
+### 5. Access the App
+Visit: http://localhost:8000/docs
+
+----------------------------------------------------------------------------------
+
+🔗 API Endpoints
+Base URL: /
+
+Users
+POST /users/ — Create a new user
+
+Posts
+POST /posts/ — Create a post
+
+GET /feed/{user_id} — Get user feed
+
+Comments
+POST /comments/ — Comment on a post
+
+GET /comments/{post_id} — Get comments for a post
+
+Likes
+POST /likes/ — Like a post
+
+POST /comment-likes/ — Like a comment
+
+Saves
+POST /saves/ — Save a post
