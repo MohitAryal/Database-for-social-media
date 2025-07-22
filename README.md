@@ -59,18 +59,17 @@ cd YOUR_REPO_NAME
 ```
 
 ### 2. Create .env File
-env
+Update the values in .env as needed
 ```bash
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=facebookdb
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
+POSTGRES_USER=your_username
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=your_database
+DATABASE_URL=postgresql+asyncpg://your_username:your_password@db/your_database
 ```
 
 ### 3. Build and Run with Docker
 ```bash
-docker-compose up --build
+make up --build
 ```
 
 ### 4. Run Alembic Migrations
