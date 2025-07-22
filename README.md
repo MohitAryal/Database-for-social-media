@@ -37,7 +37,7 @@ A high-performance asynchronous backend API built using **FastAPI**, **SQLAlchem
 │   ├── main.py          # FastAPI entrypoint
 │   ├── models.py        # SQLAlchemy models
 │   ├── schemas.py       # Pydantic schemas
-│   ├── crud.py          # DB interaction logic
+│   ├── crud/            # DB interaction logic
 │   ├── database.py      # Async DB setup
 │   └── routers/         # Route definitions
 ├── alembic/             # Alembic migration env
