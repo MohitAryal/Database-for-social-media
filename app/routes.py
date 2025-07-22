@@ -8,6 +8,47 @@ from schemas import *
 
 router = APIRouter()
 
+# --- USERS ---
+
+@router.post("/users/", response_model=UserOut)
+async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
+    new_user = User(name=user.name)
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+    return new_user
+
+
+@router.get("/users/{user_id}", response_model=UserOut)
+async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+# --- POSTS ---
+
+@router.post("/posts/", response_model=PostOut)
+async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
+    user = await db.get(User, post.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    new_post = Post(**post.dict())
+    db.add(new_post)
+    await db.commit()
+    await db.refresh(new_post)
+    return new_post
+
+
+@router.get("/posts/{post_id}", response_model=PostOut)
+async def get_post(post_id: int, db: AsyncSession = Depends(get_db)):
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
+
+
 # --- COMMENTS ---
 
 @router.post("/comments/", response_model=CommentOut)

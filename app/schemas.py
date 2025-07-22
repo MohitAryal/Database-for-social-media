@@ -2,6 +2,34 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 
+# --- USERS ---
+
+class UserCreate(BaseModel):
+    name: str
+
+class UserOut(BaseModel):
+    id: int
+    name: str
+    is_verified: int
+
+    class Config:
+        orm_mode = True
+
+# --- POSTS ---
+
+class PostCreate(BaseModel):
+    user_id: int
+    content: str
+
+class PostOut(BaseModel):
+    id: int
+    user_id: int
+    content: str
+    timestamp: datetime
+    class Config:
+        orm_mode = True
+
+
 # --- COMMENTS ---
 
 class CommentCreate(BaseModel):
