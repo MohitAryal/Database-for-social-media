@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+.venv/
+
+# VSCode
+.vscode/
+
+# Alembic
+alembic/versions/
+
+# Docker
+*.log
+*.pid
+*.db
+*.sqlite3
+.env
+postgres_data/
+
+# OS
+.DS_Store
+
+# Byte-compiled
+*.egg-info/
+.eggs/
+*.egg
+
+# Pytest cache
+.cache/
+
+# Jupyter
+.ipynb_checkpoints/
