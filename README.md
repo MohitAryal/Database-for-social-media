@@ -46,6 +46,7 @@ A high-performance asynchronous backend API built using **FastAPI**, **SQLAlchem
 ├── .env                 # Environment variables
 ├── .gitignore
 └── README.md
+```
 ---------------------------------------------------------------------------------
 
 ## Getting Started
@@ -55,25 +56,30 @@ A high-performance asynchronous backend API built using **FastAPI**, **SQLAlchem
 ```bash
 git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
 cd YOUR_REPO_NAME
+```
 
 ### 2. Create .env File
 env
+```bash
 Copy code
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=facebookdb
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
+```
 
 ### 3. Build and Run with Docker
-bash
+```bash
 Copy code
 docker-compose up --build
+```
 
 ### 4. Run Alembic Migrations
-bash
+```bash
 Copy code
 make migrate message="initial"
+```
 
 ### 5. Access the App
 Visit: http://localhost:8000/docs
