@@ -61,7 +61,6 @@ cd YOUR_REPO_NAME
 ### 2. Create .env File
 env
 ```bash
-Copy code
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=facebookdb
@@ -71,13 +70,11 @@ POSTGRES_PORT=5432
 
 ### 3. Build and Run with Docker
 ```bash
-Copy code
 docker-compose up --build
 ```
 
 ### 4. Run Alembic Migrations
 ```bash
-Copy code
 make migrate message="initial"
 ```
 
