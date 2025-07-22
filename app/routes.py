@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from database import get_db
-from models import *
-from schemas import *
+from app.database import get_db
+from app.models import *
+from app.schemas import *
 
 router = APIRouter()
 
@@ -31,10 +31,12 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/posts/", response_model=PostOut)
 async def create_post(post: PostCreate, db: AsyncSession = Depends(get_db)):
-    user = await db.get(User, post.user_id)
+    result = await db.execute(select(User).where(User.id == post.user_id))
+    user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    new_post = Post(**post.dict())
+
+    new_post = Post(user_id=post.user_id, content=post.content)
     db.add(new_post)
     await db.commit()
     await db.refresh(new_post)
