@@ -31,6 +31,7 @@ A high-performance asynchronous backend API built using **FastAPI**, **SQLAlchem
 -------------------------------------------------------------------------------
 
 ## Project Structure
+```bash
 .
 ├── app/
 │   ├── main.py          # FastAPI entrypoint
