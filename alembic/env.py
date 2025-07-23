@@ -16,7 +16,7 @@ config = context.config
 fileConfig(config.config_file_name)
 
 # Get metadata for 'autogenerate' support
-from app.models import Base  # Update this import based on your project structure
+from app.models import Base 
 target_metadata = Base.metadata
 
 # Load database URL from environment variable

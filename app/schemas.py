@@ -15,6 +15,9 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
 
+class UserDelete(BaseModel):
+    id: int
+
 # --- POSTS ---
 
 class PostCreate(BaseModel):
@@ -29,6 +32,8 @@ class PostOut(BaseModel):
     class Config:
         orm_mode = True
 
+class PostDelete(BaseModel):
+    id: int
 
 # --- COMMENTS ---
 
@@ -37,6 +42,9 @@ class CommentCreate(BaseModel):
     user_id: int
     content: str
     reply_to: Optional[int] = None
+
+class CommentDelete(BaseModel):
+    id: int
 
 class CommentOut(BaseModel):
     id: int
@@ -56,7 +64,13 @@ CommentOut.update_forward_refs()
 class LikeCreate(BaseModel):
     user_id: int
 
+class LikeRemove(BaseModel):
+    user_id: int
+
 class SaveCreate(BaseModel):
+    user_id: int
+
+class SaveRemove(BaseModel):
     user_id: int
 
 # --- CATEGORY ---

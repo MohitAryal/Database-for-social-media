@@ -40,7 +40,7 @@ class Post(AsyncAttrs, Base):
     comments = relationship("Comment", back_populates="post", cascade="all, delete")
     likes = relationship("PostLike", back_populates="post", cascade="all, delete")
     saves = relationship("PostSave", back_populates="post", cascade="all, delete")
-    categories = relationship("Category", secondary=post_category, back_populates="posts")
+    categories = relationship("Category", secondary=post_category, back_populates="posts", lazy="selectin")
 
 class Comment(AsyncAttrs, Base):
     __tablename__ = "comments"
@@ -52,11 +52,11 @@ class Comment(AsyncAttrs, Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     reply_to = Column(Integer, ForeignKey("comments.id"), nullable=True)
 
-    post = relationship("Post", back_populates="comments")
-    author = relationship("User", back_populates="comments")
-    replies = relationship("Comment", back_populates="parent", cascade="all, delete")
-    parent = relationship("Comment", remote_side=[id], back_populates="replies")
-    likes = relationship("CommentLike", back_populates="comment", cascade="all, delete")
+    post = relationship("Post", back_populates="comments", lazy="selectin")
+    author = relationship("User", back_populates="comments", lazy="selectin")
+    replies = relationship("Comment", back_populates="parent", cascade="all, delete", lazy="selectin")
+    parent = relationship("Comment", remote_side=[id], back_populates="replies", lazy="selectin")
+    likes = relationship("CommentLike", back_populates="comment", cascade="all, delete", lazy="selectin")
 
 class CommentLike(AsyncAttrs, Base):
     __tablename__ = "comment_likes"
@@ -100,4 +100,4 @@ class Category(AsyncAttrs, Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(15), unique=True)
 
-    posts = relationship("Post", secondary=post_category, back_populates="categories")
+    posts = relationship("Post", secondary=post_category, back_populates="categories", lazy="selectin")

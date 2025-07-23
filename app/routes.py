@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models import *
@@ -27,6 +28,30 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return user
 
 
+@router.delete("/user/")
+async def delete_user(payload: UserDelete, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(User)
+        .options(
+            selectinload(User.posts),
+            selectinload(User.comments),
+            selectinload(User.post_likes),
+            selectinload(User.post_saves),
+            selectinload(User.comment_likes)
+        )
+        .where(User.id == payload.id)
+    )
+    user = result.scalars().first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await db.delete(user)
+    await db.commit()
+    return {"message": "User and related data deleted"}
+
+
+
 # --- POSTS ---
 
 @router.post("/posts/", response_model=PostOut)
@@ -51,6 +76,60 @@ async def get_post(post_id: int, db: AsyncSession = Depends(get_db)):
     return post
 
 
+@router.get("/users/{user_id}/posts")
+async def get_all_posts_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    query = select(Post).where(Post.user_id == user_id)
+    result = await db.execute(query)
+    posts = result.scalars().all()
+    return posts
+
+
+@router.get("/posts/{post_id}/likes")
+async def get_all_likes_for_post(post_id: int, db: AsyncSession = Depends(get_db)):
+    query = select(PostLike).where(PostLike.post_id == post_id)
+    result = await db.execute(query)
+    likes = result.scalars().all()
+    return likes
+
+
+@router.get("/posts/{post_id}/comments")
+async def get_all_comments_for_post(post_id: int, db: AsyncSession = Depends(get_db)):
+    query = select(Comment).where(Comment.post_id == post_id)
+    result = await db.execute(query)
+    comments = result.scalars().all()
+    return comments
+
+
+@router.get("/posts/{post_id}/saves")
+async def get_all_saves_for_post(post_id: int, db: AsyncSession = Depends(get_db)):
+    query = select(PostSave).where(PostSave.post_id == post_id)
+    result = await db.execute(query)
+    saves = result.scalars().all()
+    return saves
+
+
+@router.delete("/post/")
+async def delete_post(payload: PostDelete, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Post)
+        .options(
+            selectinload(Post.likes),
+            selectinload(Post.saves),
+            selectinload(Post.comments),
+            selectinload(Post.categories),
+        )
+        .where(Post.id == payload.id)
+    )
+    post = result.scalars().first()
+
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    await db.delete(post)
+    await db.commit()
+    return {"message": "Post deleted"}
+
+
 # --- COMMENTS ---
 
 @router.post("/comments/", response_model=CommentOut)
@@ -61,6 +140,7 @@ async def create_comment(comment: CommentCreate, db: AsyncSession = Depends(get_
     if not user or not post:
         raise HTTPException(status_code=404, detail="User or Post not found")
 
+    print(comment.dict())
     new_comment = Comment(**comment.dict())
     db.add(new_comment)
     await db.commit()
@@ -71,7 +151,7 @@ async def create_comment(comment: CommentCreate, db: AsyncSession = Depends(get_
 @router.get("/posts/{post_id}/comments", response_model=List[CommentOut])
 async def get_comments(post_id: int, nested: bool = True, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Comment).where(Comment.post_id == post_id).order_by(Comment.timestamp)
+        select(Comment).where(Comment.post_id == post_id).order_by(Comment.timestamp).options(selectinload(Comment.replies))
     )
     all_comments = result.scalars().all()
 
@@ -88,6 +168,47 @@ async def get_comments(post_id: int, nested: bool = True, db: AsyncSession = Dep
                 root_comments.append(comment)
         return root_comments
     return all_comments
+
+
+@router.get("/comments/{comment_id}/details")
+async def get_comment_details(comment_id: int, db: AsyncSession = Depends(get_db)):
+    query = select(Comment).options(
+        selectinload(Comment.likes),
+        selectinload(Comment.replies)
+    ).where(Comment.id == comment_id)
+
+    result = await db.execute(query)
+    comment = result.scalars().first()
+
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+    return {
+        "comment_id": comment.id,
+        "content": comment.content,
+        "likes": comment.likes,
+        "replies": comment.replies
+    }
+
+
+@router.delete("/comment/")
+async def delete_comment(payload: CommentDelete, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Comment)
+        .options(
+            selectinload(Comment.replies),
+            selectinload(Comment.likes)
+        )
+        .where(Comment.id == payload.id)
+    )
+    comment = result.scalars().first()
+
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+    await db.delete(comment)
+    await db.commit()
+    return {"message": "Comment deleted"}
 
 
 # --- COMMENT LIKES ---
@@ -127,6 +248,21 @@ async def like_post(post_id: int, like: LikeCreate, db: AsyncSession = Depends(g
     return {"message": "Post liked"}
 
 
+@router.delete("/post/like/")
+async def remove_post_like(payload: LikeRemove, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(PostLike).where(PostLike.user_id == payload.user_id)
+    )
+    like = result.scalars().first()
+
+    if not like:
+        raise HTTPException(status_code=404, detail="Like not found")
+
+    await db.delete(like)
+    await db.commit()
+    return {"message": "Like removed"}
+
+
 # --- POST SAVES ---
 
 @router.post("/posts/{post_id}/save")
@@ -144,6 +280,21 @@ async def save_post(post_id: int, save: SaveCreate, db: AsyncSession = Depends(g
     return {"message": "Post saved"}
 
 
+@router.delete("/post/save/")
+async def remove_post_save(payload: SaveRemove, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(PostSave).where(PostSave.user_id == payload.user_id)
+    )
+    save = result.scalars().first()
+
+    if not save:
+        raise HTTPException(status_code=404, detail="Save not found")
+
+    await db.delete(save)
+    await db.commit()
+    return {"message": "Save removed"}
+
+
 # --- CATEGORIES ---
 
 @router.post("/categories/", response_model=CategoryOut)
@@ -157,10 +308,24 @@ async def create_category(cat: CategoryCreate, db: AsyncSession = Depends(get_db
 
 @router.post("/posts/categories/assign")
 async def assign_categories(payload: PostCategoryAssign, db: AsyncSession = Depends(get_db)):
+    # Retrieve the post
     post = await db.get(Post, payload.post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    result = await db.execute(select(Category).where(Category.id.in_(payload.category_ids)))
-    post.categories = result.scalars().all()
+
+    # Query the categories
+    result = await db.execute(
+        select(Category)
+        .where(Category.id.in_(payload.category_ids))
+        .options(selectinload(Category.posts)) 
+    )
+    categories = result.scalars().all()
+
+    if not categories:
+        raise HTTPException(status_code=404, detail="Categories not found")
+
+    # Assign categories to post
+    post.categories = categories
     await db.commit()
+
     return {"message": "Categories assigned to post"}
