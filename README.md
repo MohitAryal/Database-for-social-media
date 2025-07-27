@@ -1,4 +1,4 @@
-# Database for social media with FastAPI + PostgreSQL
+# Backend for social media with FastAPI + PostgreSQL
 
 A high-performance asynchronous backend API built using **FastAPI**, **SQLAlchemy (2.0 async)**, **PostgreSQL**, **Alembic**, and **Docker**. It supports user-generated posts, comments, likes, saves, and category-tagging — built for scalability and recommendation engine integration.
 
